@@ -33,13 +33,14 @@ export class CSSState {
     mqMap: MapType = new Map()
     private styleTag: HTMLStyleElement | null = null
     private themesCSS = new Map<string, string>()
+    private injectedStylesId = 'unistyles-web';
 
     constructor(private services: UnistylesServices) {
         if (isServer()) {
             return
         }
 
-        const ssrTag = document.getElementById('unistyles-web')
+        const ssrTag = document.getElementById(this.injectedStylesId)
 
         if (ssrTag) {
             this.styleTag = ssrTag as HTMLStyleElement
@@ -48,7 +49,7 @@ export class CSSState {
         }
 
         this.styleTag = document.createElement('style')
-        this.styleTag.id = 'unistyles-web'
+        this.styleTag.id = this.injectedStylesId
         document.head.appendChild(this.styleTag)
     }
 
@@ -191,5 +192,22 @@ export class CSSState {
     reset = () => {
         this.mqMap.clear()
         this.mainMap.clear()
+    }
+
+    setInjectedStylesId = (newId: string, shouldRecreate?: boolean) => {
+        this.injectedStylesId = newId
+
+        if (this.styleTag) {
+            this.styleTag.parentNode?.removeChild(this.styleTag)
+        }
+
+    
+        this.styleTag = document.createElement('style')
+        this.styleTag.id = this.injectedStylesId
+        document.head.appendChild(this.styleTag)
+
+        if (shouldRecreate) {
+            this.recreate()
+        }
     }
 }
